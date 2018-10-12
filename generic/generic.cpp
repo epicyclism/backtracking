@@ -1,29 +1,34 @@
-#include "generic.h"
 
 #include <iostream>
 #include <vector>
+
+#include "generic.h"
 
 struct move_t
 {
 	static int sz_;
 	       int pos_ = 0;
 
+	explicit move_t (int mv ) : pos_ (mv)
+	{}
 	move_t& operator++()
 	{
-		++pos_;
+		pos_ = end();
 		return *this;
 	}
+#if 0
 	bool operator!=(move_t const& other) const
 	{
 		return pos_ != other.pos_;
 	}
-	move_t begin() const
+#endif
+	int begin() const
 	{
-		return move_t{ pos_ };
+		return pos_ ;
 	}
-	move_t end() const
+	int end() const
 	{
-		return move_t{ sz_ * sz_ };
+		return (pos_ / sz_ + 1) * sz_ ;
 	}
 };
 
@@ -64,6 +69,16 @@ public:
 		brd_[mv.pos_] = false;
 		--set_;
 	}
+	void set(int mv)
+	{
+		brd_[mv] = true;
+		++set_;
+	}
+	void unset(int mv)
+	{
+		brd_[mv] = false;
+		--set_;
+	}
 	bool test(size_t row, size_t col) const
 	{
 		return brd_[row * sz_ + col];
@@ -74,8 +89,12 @@ public:
 	}
 	bool valid(move_t const& mv)
 	{
-		auto row = mv.pos_ / sz_;
-		auto col = mv.pos_ % sz_;
+		return valid(mv.pos_);
+	}
+	bool valid(int mv)
+	{
+		auto row = mv / sz_;
+		auto col = mv % sz_;
 
 		// horizontal
 		for (int c = 0; c < col; ++c)
@@ -104,7 +123,7 @@ public:
 	move_t first_move() const
 	{
 		move_t::sz_ = sz_;
-		return move_t();
+		return move_t(0);
 	}
 	bool solved() const
 	{
