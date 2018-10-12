@@ -3,47 +3,43 @@
 #include <iostream>
 #include <vector>
 
-struct move
+struct move_t
 {
-	static size_t sz_;
-	size_t pos_ = 0;
+	static int sz_;
+	       int pos_ = 0;
 
-	move& operator++()
+	move_t& operator++()
 	{
 		++pos_;
 		return *this;
 	}
-	bool operator==(move const& other)
+	bool operator!=(move_t const& other) const
 	{
-		return pos_ == other.pos_;
+		return pos_ != other.pos_;
 	}
-	move begin()
+	move_t begin() const
 	{
-		return move(sz_, pos_);
+		return move_t{ pos_ };
 	}
-	move end()
+	move_t end() const
 	{
-		return move(sz_, pos_ + sz_);
-	}
-	bool at_end() const
-	{
-		return pos_ == sz_ * sz_;
+		return move_t{ sz_ * sz_ };
 	}
 };
 
-size_t move::sz_ = 0;
+int move_t::sz_ = 0;
 
-class board
+class board_t
 {
 private:
 	std::vector<bool> brd_;
-	size_t sz_;
-
+	int sz_;
+	int set_;
 public:
 	// board is sz on a side
-	board(int sz) : sz_(sz), brd_(sz*sz, false)
+	board_t(int sz) : sz_(sz), brd_(sz*sz, false), set_ (0)
 	{}
-	friend std::ostream& operator<< (std::ostream& ostr, board const& brd)
+	friend std::ostream& operator<< (std::ostream& ostr, board_t const& brd)
 	{
 		size_t cnt{ 0 };
 		for (auto b : brd.brd_)
@@ -58,29 +54,36 @@ public:
 		}
 		return ostr;
 	}
-	void set(move const& mv)
+	void set(move_t const& mv)
 	{
 		brd_[mv.pos_] = true;
+		++set_;
 	}
-	void clear(move const& mv)
+	void unset(move_t const& mv)
 	{
 		brd_[mv.pos_] = false;
+		--set_;
 	}
-	bool test(int row, int col) const
+	bool test(size_t row, size_t col) const
 	{
 		return brd_[row * sz_ + col];
 	}
 	int size() const
 	{
-		return int(sz_);
+		return sz_;
 	}
-	bool valid(move const& mv)
+	bool valid(move_t const& mv)
 	{
-		int row = mv.pos_ / sz_;
-		int col = mv.pos_ % sz_;
+		auto row = mv.pos_ / sz_;
+		auto col = mv.pos_ % sz_;
+
+		// horizontal
+		for (int c = 0; c < col; ++c)
+			if (test(row, c))
+				return false;
 		// vertical
 		for (int r = 0; r < row; ++r)
-			if (brd.test(r, col))
+			if (test(r, col))
 				return false;
 
 		// diagonals
@@ -88,9 +91,9 @@ public:
 		int right = col + row;
 		for (int r = 0; r < row; ++r)
 		{
-			if (left >= 0 && brd.test(r, left))
+			if (left >= 0 && test(r, left))
 				return false;
-			if (right < brd.size() && brd.test(r, right))
+			if (right < sz_ && test(r, right))
 				return false;
 			++left;
 			--right;
@@ -98,10 +101,14 @@ public:
 
 		return true;
 	}
-	move first_move() const
+	move_t first_move() const
 	{
-		move::sz_ = sz_;
-		return move();
+		move_t::sz_ = sz_;
+		return move_t();
+	}
+	bool solved() const
+	{
+		return set_ == sz_;
 	}
 };
 
@@ -114,8 +121,8 @@ int main()
 		std::cin >> n;
 	}
 
-	board brd(n);
-	if (solve(brd, brd.first_move ()))
+	board_t brd(n);
+	if (epicyclism::solve(brd, brd.first_move ()))
 	{
 		std::cout << "Found a solution for " << n << "-queens\n";
 		std::cout << brd;

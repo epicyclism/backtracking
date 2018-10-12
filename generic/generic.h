@@ -1,18 +1,27 @@
 #pragma once
 
-template<typename Space, typename State> bool solver(Space& space, State state)
+#include <iostream>
+
+namespace epicyclism
 {
-	if (state.at_end())
-		return true;
-	for (auto move : state)
+	template<typename Space, typename State> bool solve(Space& space, State state)
 	{
-		if (space.valid(move))
+		if (space.solved())
+			return true;
+
+		//		for (auto& move : state)
+		auto move = state.begin();
+		while ( move != state.end())
 		{
-			space.set(move);
-			if (solver(space, ++State(move)))
-				return true;
-			space.unset(move);
+			if (space.valid(move))
+			{
+				space.set(move);
+				if (solve(space, ++State(move)))
+					return true;
+				space.unset(move);
+			}
+			++move;
 		}
+		return false; // no solution
 	}
-	return false; // no solution
 }

@@ -7,3 +7,4 @@ project ("backtracking")
 
 # Include sub-projects.
 add_subdirectory ("n-queens")
+add_subdirectory ("generic")
