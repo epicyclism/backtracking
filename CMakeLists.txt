@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-project ("n-queens")
+project ("backtracking")
 
 # Include sub-projects.
 add_subdirectory ("n-queens")
